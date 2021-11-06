@@ -1,10 +1,10 @@
 #[macro_use]
 extern crate criterion;
-extern crate polylabel;
+extern crate pylylabel;
 
 use criterion::Criterion;
 use geo::Polygon;
-use polylabel::polylabel;
+use pylylabel::polylabel;
 
 fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("Threaded", |bencher| {
