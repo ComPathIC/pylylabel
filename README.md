@@ -22,8 +22,8 @@ let coords = vec![
     (0.0, 0.0)
 ];
 let poly = Polygon::new(coords.into(), vec![]);
-let label_pos = polylabel(&poly, &0.10);
-// Point(0.5625, 0.5625)
+let label_pos, distance = polylabel(&poly, &0.10);
+// Point(0.5625, 0.5625), 0.5625
 ```
 
 ## Documentation

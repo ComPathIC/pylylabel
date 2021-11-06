@@ -151,18 +151,20 @@ fn add_quad<T>(
 /// // Its centroid lies outside the polygon
 /// assert_eq!(poly.centroid().unwrap(), Point::new(1.3571428571428572, 1.3571428571428572));
 ///
-/// let label_position = polylabel(&poly, &0.1).unwrap();
+/// let (label_position, distance) = polylabel(&poly, &0.1).unwrap();
 /// // Optimum label position is inside the polygon
 /// assert_eq!(label_position, Point::new(0.5625, 0.5625));
+/// // Distance from the position to the polygon
+/// assert_eq!(distance, 0.5625);
 /// ```
 ///
-pub fn polylabel<T>(polygon: &Polygon<T>, tolerance: &T) -> Result<Point<T>, PolylabelError>
+pub fn polylabel<T>(polygon: &Polygon<T>, tolerance: &T) -> Result<(Point<T>, T), PolylabelError>
 where
     T: GeoFloat + FromPrimitive + Sum,
 {
     // special case for degenerate polygons
     if polygon.signed_area() == T::zero() {
-        return Ok(Point::new(T::zero(), T::zero()));
+        return Ok((Point::new(T::zero(), T::zero()), T::zero()));
     }
     let two = T::one() + T::one();
     // Initial best cell values
@@ -177,7 +179,7 @@ where
     let cell_size = width.min(height);
     // Special case for degenerate polygons
     if cell_size == T::zero() {
-        return Ok(Point::new(bbox.min().x, bbox.min().y));
+        return Ok((Point::new(bbox.min().x, bbox.min().y), T::zero()));
     }
     let mut h = cell_size / two;
     let distance = signed_distance(&centroid.x(), &centroid.y(), polygon);
@@ -246,7 +248,10 @@ where
         add_quad(&mut cell_queue, &cell, &h, polygon);
     }
     // We've exhausted the queue, so return the best solution we've found
-    Ok(Point::new(best_cell.centroid.x(), best_cell.centroid.y()))
+    Ok((
+        Point::new(best_cell.centroid.x(), best_cell.centroid.y()),
+        best_cell.distance,
+    ))
 }
 
 #[cfg(test)]
@@ -261,7 +266,7 @@ mod tests {
         let coords = include!("../tests/fixtures/poly1.rs");
         let poly = Polygon::new(coords.into(), vec![]);
         let res = polylabel(&poly, &10.000).unwrap();
-        assert_eq!(res, Point::new(59.35615556364569, 121.83919629746435));
+        assert_eq!(res.0, Point::new(59.35615556364569, 121.83919629746435));
     }
     #[test]
     // does a concave polygon contain the calculated point?
@@ -270,14 +275,14 @@ mod tests {
         let coords = include!("../tests/fixtures/poly2.rs");
         let poly = Polygon::new(coords.into(), vec![]);
         let res = polylabel(&poly, &1.0).unwrap();
-        assert!(poly.contains(&res));
+        assert!(poly.contains(&res.0));
     }
     #[test]
     fn test_london() {
         let coords = include!("../tests/fixtures/poly3.rs");
         let poly = Polygon::new(coords.into(), vec![]);
         let res = polylabel(&poly, &0.001).unwrap();
-        assert_eq!(res, Point::new(-0.45556816445920356, 51.54848888202887));
+        assert_eq!(res.0, Point::new(-0.45556816445920356, 51.54848888202887));
     }
     #[test]
     fn polygon_l_test() {
@@ -293,21 +298,21 @@ mod tests {
         ];
         let poly = Polygon::new(coords.into(), vec![]);
         let res = polylabel(&poly, &0.10).unwrap();
-        assert_eq!(res, Point::new(0.5625, 0.5625));
+        assert_eq!(res.0, Point::new(0.5625, 0.5625));
     }
     #[test]
     fn degenerate_polygon_test() {
         let a_coords = vec![(0.0, 0.0), (1.0, 0.0), (2.0, 0.0), (0.0, 0.0)];
         let a_poly = Polygon::new(a_coords.into(), vec![]);
         let a_res = polylabel(&a_poly, &1.0).unwrap();
-        assert_eq!(a_res, Point::new(0.0, 0.0));
+        assert_eq!(a_res.0, Point::new(0.0, 0.0));
     }
     #[test]
     fn degenerate_polygon_test_2() {
         let b_coords = vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (1.0, 0.0), (0.0, 0.0)];
         let b_poly = Polygon::new(b_coords.into(), vec![]);
         let b_res = polylabel(&b_poly, &1.0).unwrap();
-        assert_eq!(b_res, Point::new(0.0, 0.0));
+        assert_eq!(b_res.0, Point::new(0.0, 0.0));
     }
     #[test]
     // Is our priority queue behaving as it should?

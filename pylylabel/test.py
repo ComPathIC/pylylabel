@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 ffi.py
 
@@ -31,26 +29,7 @@ THE SOFTWARE.
 
 """
 
-from shapely.geometry import Polygon
-from .pylylabel import polylabel_ffi
-
-def polylabel(ext, interiors=None, tolerance=1.0):
-    """
-    Calculate the optimum label position within a Polygon
-    You may pass either a Shapely Polygon and a tolerance, or
-    an exterior ring (list), a list of interior rings (list), and a tolerance
-
-    Accepts Polygon instances as well as lists and lists of lists
-    This is a terrible interface, but y'know, dynamic languages
-
-    """
-    if isinstance(ext, Polygon):
-        _ext = list(ext.exterior.coords)
-        _interiors = [list(ring.coords) for ring in ext.interiors]
-        return polylabel_ffi(_ext, _interiors, tolerance)
-    else:
-        return polylabel_ffi(ext, interiors, tolerance)
-
+from . import polylabel
 
 if __name__ == "__main__":
     # test that everything's working
@@ -63,4 +42,4 @@ if __name__ == "__main__":
 
     res = polylabel(exterior, interiors=interiors, tolerance=0.1)
     if res != (3.125, 2.875):
-        raise ValueError('Polylabel returned an incorrect value: %s, %s' % (res[0], res[1]))
+        raise ValueError(f"Polylabel returned an incorrect value: {res}")

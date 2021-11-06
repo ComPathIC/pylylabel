@@ -1,27 +1,27 @@
 use crate::polylabel;
-use geo::{LineString, Point, Polygon};
-use pyo3::{prelude::*};
+use geo::{LineString, Polygon};
+use pyo3::prelude::*;
 use std::f64;
 
 /// FFI access to the [`polylabel`](fn.polylabel.html) function
 ///
 /// Accepts three arguments:
 ///
-/// - an exterior ring [`Array`](struct.Array.html)
-/// - zero or more interior rings [`WrapperArray`](struct.WrapperArray.html)
-/// - a tolerance `c_double`.
-/// If an error occurs while attempting to calculate the label position, the resulting point coordinates
-/// will be NaN, NaN.
+/// - an exterior ring
+/// - zero or more interior rings
+/// - a tolerance
+/// If an error occurs while attempting to calculate the label position, the resulting point coordinates and distance
+/// will be NaN, NaN, NaN.
 #[pyfunction]
 pub fn polylabel_ffi(
     outer: Vec<[f64; 2]>,
     interior: Vec<Vec<[f64; 2]>>,
     tolerance: f64,
-) -> (f64, f64) {
+) -> (f64, f64, f64) {
     let exterior: LineString<_> = outer.into();
     let ls_int: Vec<LineString<f64>> = interior.into_iter().map(|vec| vec.into()).collect();
     let poly = Polygon::new(exterior, ls_int);
-    polylabel(&poly, &tolerance).unwrap_or_else(|_| Point::new(f64::NAN, f64::NAN)).x_y()
+    polylabel(&poly, &tolerance).map_or((f64::NAN, f64::NAN, f64::NAN), |(p, d)| (p.x(), p.y(), d))
 }
 
 #[pymodule]
@@ -53,6 +53,6 @@ mod tests {
         ];
 
         let res = polylabel_ffi(outer, inners, 0.1);
-        assert_eq!(res, (3.125, 2.875));
+        assert_eq!(res, (3.125, 2.875, 0.8838834764831844));
     }
 }
