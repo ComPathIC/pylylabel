@@ -34,19 +34,18 @@ THE SOFTWARE.
 from shapely.geometry import Polygon
 from .pylylabel import polylabel_ffi
 
-def polylabel(ext, interiors=[], tolerance=1.0):
+def polylabel(geometry, tolerance=1.0):
     """
     Calculate the optimum label position within a Polygon
-    You may pass either a Shapely Polygon and a tolerance, or
-    an exterior ring (list), a list of interior rings (list), and a tolerance
-
-    Accepts Polygon instances as well as lists and lists of lists
-    This is a terrible interface, but y'know, dynamic languages
-
+    geometry is either a Shapely Polygon, or a geojson-like
+    polygon geometry (a list of rings where the first one is the
+    exterior ring, followed by interior rings, where a ring is a list
+    of [x, y] coordinates)
     """
-    if isinstance(ext, Polygon):
-        _ext = ext.exterior.coords
-        _interiors = [ring.coords for ring in ext.interiors]
-        return polylabel_ffi(_ext, _interiors, tolerance)
+    if isinstance(geometry, Polygon):
+        exterior = geometry.exterior.coords
+        interiors = [ring.coords for ring in geometry.interiors]
     else:
-        return polylabel_ffi(ext, interiors, tolerance)
+        exterior = geometry[0]
+        interiors = geometry[1:]
+    return polylabel_ffi(exterior, interiors, tolerance)
