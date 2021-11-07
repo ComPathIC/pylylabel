@@ -41,5 +41,5 @@ if __name__ == "__main__":
                 ]
 
     res = polylabel(exterior, interiors=interiors, tolerance=0.1)
-    if res != (3.125, 2.875):
+    if res != (3.125, 2.875, 0.8838834764831844):
         raise ValueError(f"Polylabel returned an incorrect value: {res}")
