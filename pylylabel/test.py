@@ -30,16 +30,28 @@ THE SOFTWARE.
 """
 
 from . import polylabel
+from shapely.geometry import Polygon
 
 if __name__ == "__main__":
     # test that everything's working
 
     exterior = [[4.0, 1.0], [5.0, 2.0], [5.0, 3.0], [4.0, 4.0], [3.0, 4.0], [2.0, 3.0], [2.0, 2.0], [3.0, 1.0], [4.0, 1.0]]
+    # No interior
+    res = polylabel(exterior, tolerance=0.1)
+    if res != (3.5, 2.5, 1.4142135623730951): 
+        raise ValueError(f"Polylabel returned an incorrect value: {res}")
+
     interiors = [
                     [[3.5, 3.5], [4.4, 2.0], [2.6, 2.0], [3.5, 3.5]],
                     [[4.0, 3.0], [4.0, 3.2], [4.5, 3.2], [4.0, 3.0]],
                 ]
 
+    # Interiors as lists
     res = polylabel(exterior, interiors=interiors, tolerance=0.1)
+    if res != (3.125, 2.875, 0.8838834764831844):
+        raise ValueError(f"Polylabel returned an incorrect value: {res}")
+
+    # A Shapely polygon
+    res = polylabel(Polygon(exterior, interiors), tolerance=0.1)
     if res != (3.125, 2.875, 0.8838834764831844):
         raise ValueError(f"Polylabel returned an incorrect value: {res}")

@@ -34,7 +34,7 @@ THE SOFTWARE.
 from shapely.geometry import Polygon
 from .pylylabel import polylabel_ffi
 
-def polylabel(ext, interiors=None, tolerance=1.0):
+def polylabel(ext, interiors=[], tolerance=1.0):
     """
     Calculate the optimum label position within a Polygon
     You may pass either a Shapely Polygon and a tolerance, or
@@ -45,8 +45,8 @@ def polylabel(ext, interiors=None, tolerance=1.0):
 
     """
     if isinstance(ext, Polygon):
-        _ext = list(ext.exterior.coords)
-        _interiors = [list(ring.coords) for ring in ext.interiors]
+        _ext = ext.exterior.coords
+        _interiors = [ring.coords for ring in ext.interiors]
         return polylabel_ffi(_ext, _interiors, tolerance)
     else:
         return polylabel_ffi(ext, interiors, tolerance)
