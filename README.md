@@ -1,5 +1,8 @@
-# Polylabel-rs
-A Rust implementation of the [Polylabel](https://github.com/mapbox/polylabel) algorithm, with a Python binding `pylylabel`
+# Pylylabel
+A Rust implementation of the [Polylabel](https://github.com/mapbox/polylabel) algorithm.
+
+This is a fork of [polylabel-rs](https://github.com/urschrei/polylabel-rs). Pylylabel's `polylabel` function also
+returns the distance from the label position to the polygon. Python binding is provided using PyO3.
 
 The orange dot is the polygon centroid. The teal dot is the ideal label position. Red boxes show the search space.
 [![GIF](output.gif)]()
@@ -36,7 +39,7 @@ Using a 4-core 2.3 GHz Intel Core i5, finding a label position on a ~9k-vertex p
 Requirements:
 - Python 3.5+
 - Rust stable
-- [maturin] (https://github.com/PyO3/maturin)
+- [maturin](https://github.com/PyO3/maturin)
 
 `maturin build --release`
 
